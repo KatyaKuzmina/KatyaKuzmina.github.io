@@ -6,7 +6,7 @@
 </head>
 <body>
   <h2>Нажмите, чтобы записать голосовую команду</h2>
-  <button id="startBtn">🎤 Record запись</button>
+  <button id="startBtn">🎤 Record записьm</button>
   <button id="stopBtn" disabled>⏹️ Остановить</button>
   <p id="status"></p>
 
@@ -33,7 +33,7 @@
         const reader = new FileReader();
         reader.onloadend = () => {
           const base64data = reader.result.split(',')[1]; // Убираем data:mime;base64,
-          fetch("https://script.google.com/macros/s/AKfycbwyJrekI90YMdsU-fwY2SyHjKi9a7JIlSOhI9MDcR59RJo5Gh-xpw5K3tQ3m-s3ZGsznA/exec", {
+          fetch("https://script.google.com/macros/s/AKfycbzUZp8Oj3YY74k2-vtDuvstI-70uTG5Bnxx9-6pjuPcl5QkYcMYoPLhlEGYouSb0TUx1g/exec", {
             method: "POST",
             headers: {
               "Content-Type": "application/json"
