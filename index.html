@@ -7,7 +7,7 @@
 <body>
   <h2>Нажмите, чтобы записать голосовую команду</h2>
   <button id="startBtn">🎤 Начать запись</button>
-  <button id="stopBtn" disabled>⏹️ Остановить</button>
+  <button id="stopBtn" disabled>⏹️ Остановитьь</button>
   <p id="status"></p>
 
   <script>
@@ -31,7 +31,7 @@
         const formData = new FormData();
         formData.append("audio", audioBlob, "command.webm");
 
-        fetch("https://script.google.com/macros/s/AKfycbwSUf7iDT4R70T3HLWkwjfazYMG2KLXPCU1C9Nlya0zy1OssQ8bSYywjzrQytF-vaZxIw/exec", {
+        fetch("https://script.google.com/macros/s/AKfycbzmLIbhbJR9CJX0hC895-XItoM-bSMzDeDxn8XokeElxja_oQR4Qsv5Y-3IPidNde5iUg/exec", {
           method: "POST",
           body: formData
         }).then(() => status.textContent = "Отправлено!")
