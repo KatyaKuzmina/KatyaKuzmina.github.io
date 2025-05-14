@@ -27,16 +27,29 @@
       mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
 
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-        const formData = new FormData();
-        formData.append("audio", audioBlob, "command.webm");
+  const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
 
-        fetch("https://script.google.com/macros/s/AKfycbwyJrekI90YMdsU-fwY2SyHjKi9a7JIlSOhI9MDcR59RJo5Gh-xpw5K3tQ3m-s3ZGsznA/exec", {
-          method: "POST",
-          body: formData
-        }).then(() => status.textContent = "Отправлено!")
-          .catch(() => status.textContent = "Ошибка отправки.");
-      };
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    const base64data = reader.result.split(',')[1]; // убираем "data:..."
+    
+    fetch("https://script.google.com/macros/s/AKfycbxH_xE32fZwCv7aB2vBMK5cn75avUuFCJIwnM6vX1j36Ju_OJyOeuIexTegRtUGCzq5wg/exec", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        filename: "command_" + Date.now() + ".webm",
+        mimeType: "audio/webm",
+        data: base64data
+      })
+    }).then(() => status.textContent = "Отправлено!")
+      .catch(() => status.textContent = "Ошибка отправки.");
+  };
+
+  reader.readAsDataURL(audioBlob);
+};
+
 
       startBtn.disabled = true;
       stopBtn.disabled = false;
