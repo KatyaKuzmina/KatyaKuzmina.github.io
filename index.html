@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Запись команд для умного дома</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+        #status { margin-top: 20px; color: green; }
+    </style>
+</head>
+<body>
+    <h1>Запишите команду для умного дома</h1>
+    <p>Например: "Включить свет", "Выключить музыку" и т.д.</p>
+    
+    <button id="recordButton">Записать</button>
+    <button id="stopButton" disabled>Остановить</button>
+    <button id="uploadButton" disabled>Отправить</button>
+    
+    <div id="status"></div>
+    <audio id="audioPlayback" controls style="margin-top: 20px;"></audio>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        const recordButton = document.getElementById('recordButton');
+        const stopButton = document.getElementById('stopButton');
+        const uploadButton = document.getElementById('uploadButton');
+        const statusDiv = document.getElementById('status');
+        const audioPlayback = document.getElementById('audioPlayback');
+
+        // Запись аудио
+        recordButton.addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.start();
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = (e) => {
+                    audioChunks.push(e.data);
+                };
+                
+                recordButton.disabled = true;
+                stopButton.disabled = false;
+                statusDiv.textContent = "Запись...";
+            } catch (err) {
+                statusDiv.textContent = "Ошибка: " + err.message;
+            }
+        });
+
+        // Остановка записи
+        stopButton.addEventListener('click', () => {
+            mediaRecorder.stop();
+            mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            
+            recordButton.disabled = false;
+            stopButton.disabled = true;
+            uploadButton.disabled = false;
+            statusDiv.textContent = "Запись завершена!";
+            
+            // Воспроизведение записи для проверки
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            audioPlayback.src = URL.createObjectURL(audioBlob);
+        });
+
+        // Загрузка в Google Cloud Storage
+        uploadButton.addEventListener('click', async () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            const formData = new FormData();
+            formData.append('audio', audioBlob, `command_${Date.now()}.wav`);
+            
+            try {
+                statusDiv.textContent = "Отправка...";
+                
+                // Здесь нужно заменить на ваш Cloud Function URL (шаг 3)
+                const response = await fetch('YOUR_CLOUD_FUNCTION_URL', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                statusDiv.textContent = "Успешно отправлено! ID: " + result.id;
+            } catch (err) {
+                statusDiv.textContent = "Ошибка загрузки: " + err.message;
+            }
+        });
+    </script>
+</body>
+</html>
