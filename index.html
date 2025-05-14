@@ -33,7 +33,7 @@
         const reader = new FileReader();
         reader.onloadend = () => {
           const base64data = reader.result.split(',')[1]; // Убираем data:mime;base64,
-          fetch("https://script.google.com/macros/s/AKfycbxH_xE32fZwCv7aB2vBMK5cn75avUuFCJIwnM6vX1j36Ju_OJyOeuIexTegRtUGCzq5wg/exec", {
+          fetch("https://script.google.com/macros/s/AKfycbwyJrekI90YMdsU-fwY2SyHjKi9a7JIlSOhI9MDcR59RJo5Gh-xpw5K3tQ3m-s3ZGsznA/exec", {
             method: "POST",
             headers: {
               "Content-Type": "application/json"
