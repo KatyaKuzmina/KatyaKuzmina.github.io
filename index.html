@@ -6,8 +6,8 @@
 </head>
 <body>
   <h2>Нажмите, чтобы записать голосовую команду</h2>
-  <button id="startBtn">🎤Start recording</button>
-  <button id="stopBtn" disabled>⏹️ Stop</button>
+  <button id="startBtn">🎤 Начать запись</button>
+  <button id="stopBtn" disabled>⏹️ Остановить</button>
   <p id="status"></p>
 
   <script>
@@ -21,35 +21,34 @@
     startBtn.onclick = async () => {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
       mediaRecorder.start();
       status.textContent = "Запись...";
 
       mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
 
       mediaRecorder.onstop = () => {
-  const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+        const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
 
-  const reader = new FileReader();
-  reader.onloadend = () => {
-    const base64data = reader.result.split(',')[1]; // убираем "data:..."
-    
-    fetch("https://script.google.com/macros/s/AKfycbxH_xE32fZwCv7aB2vBMK5cn75avUuFCJIwnM6vX1j36Ju_OJyOeuIexTegRtUGCzq5wg/exec", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        filename: "command_" + Date.now() + ".webm",
-        mimeType: "audio/webm",
-        data: base64data
-      })
-    }).then(() => status.textContent = "Отправлено!")
-      .catch(() => status.textContent = "Ошибка отправки.");
-  };
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64data = reader.result.split(',')[1]; // Убираем data:mime;base64,
+          fetch("https://script.google.com/macros/s/AKfycbxH_xE32fZwCv7aB2vBMK5cn75avUuFCJIwnM6vX1j36Ju_OJyOeuIexTegRtUGCzq5wg/exec", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              filename: "command_" + Date.now() + ".webm",
+              mimeType: "audio/webm",
+              data: base64data
+            })
+          }).then(() => status.textContent = "Отправлено!")
+            .catch(() => status.textContent = "Ошибка отправки.");
+        };
 
-  reader.readAsDataURL(audioBlob);
-};
-
+        reader.readAsDataURL(audioBlob);
+      };
 
       startBtn.disabled = true;
       stopBtn.disabled = false;
@@ -64,3 +63,4 @@
   </script>
 </body>
 </html>
+
