@@ -33,8 +33,7 @@
         const reader = new FileReader();
         reader.onloadend = () => {
           const base64data = reader.result.split(',')[1];
-          fetch("https://script.google.com/macros/s/AKfycbwZGEk4MgOg-UX_PKA8rornlhARJUFNazjNkHb_rAuIOffYyNUq7AW7m0wXBABUidn3FA/exec", {
-            method: "POST",
+          fetch("https://script.google.com/macros/s/AKfycby_JqQcMD4vjfQHF-UwlV4By_oSGpxYvRabBqbXEriEK_WJVXsdvGZFum9sG8umGQpvig/exec", {             method: "POST",
             headers: {
               "Content-Type": "application/json"
             },
@@ -42,9 +41,15 @@
               filename: "command_" + Date.now() + ".webm",
               mimeType: "audio/webm",
               data: base64data
-            })
-          }).then(() => status.textContent = "Отправлено!")
-            .catch(() => status.textContent = "Ошибка отправки.");
+            })})
+  .then(() => status.textContent = "Отправлено!")
+  .catch((err) => {
+    console.error("Fetch error:", err);
+    status.textContent = "Ошибка отправки.";
+  });
+
+          
+
         };
 
         reader.readAsDataURL(audioBlob);
