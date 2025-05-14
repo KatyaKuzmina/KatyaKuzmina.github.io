@@ -1,89 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Запись команд для умного дома</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
-        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
-        #status { margin-top: 20px; color: green; }
-    </style>
+  <meta charset="UTF-8">
+  <title>Запись команды для умного дома</title>
 </head>
 <body>
-    <h1>Запишите команду для умного дома</h1>
-    <p>Например: "Включить свет", "Выключить музыку" и т.д.</p>
-    
-    <button id="recordButton">Записать</button>
-    <button id="stopButton" disabled>Остановить</button>
-    <button id="uploadButton" disabled>Отправить</button>
-    
-    <div id="status"></div>
-    <audio id="audioPlayback" controls style="margin-top: 20px;"></audio>
+  <h2>Нажмите, чтобы записать голосовую команду</h2>
+  <button id="startBtn">🎤 Начать запись</button>
+  <button id="stopBtn" disabled>⏹️ Остановить</button>
+  <p id="status"></p>
 
-    <script>
-        let mediaRecorder;
-        let audioChunks = [];
-        const recordButton = document.getElementById('recordButton');
-        const stopButton = document.getElementById('stopButton');
-        const uploadButton = document.getElementById('uploadButton');
-        const statusDiv = document.getElementById('status');
-        const audioPlayback = document.getElementById('audioPlayback');
+  <script>
+    let mediaRecorder;
+    let audioChunks = [];
 
-        // Запись аудио
-        recordButton.addEventListener('click', async () => {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                mediaRecorder.start();
-                audioChunks = [];
-                
-                mediaRecorder.ondataavailable = (e) => {
-                    audioChunks.push(e.data);
-                };
-                
-                recordButton.disabled = true;
-                stopButton.disabled = false;
-                statusDiv.textContent = "Запись...";
-            } catch (err) {
-                statusDiv.textContent = "Ошибка: " + err.message;
-            }
-        });
+    const startBtn = document.getElementById("startBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const status = document.getElementById("status");
 
-        // Остановка записи
-        stopButton.addEventListener('click', () => {
-            mediaRecorder.stop();
-            mediaRecorder.stream.getTracks().forEach(track => track.stop());
-            
-            recordButton.disabled = false;
-            stopButton.disabled = true;
-            uploadButton.disabled = false;
-            statusDiv.textContent = "Запись завершена!";
-            
-            // Воспроизведение записи для проверки
-            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-            audioPlayback.src = URL.createObjectURL(audioBlob);
-        });
+    startBtn.onclick = async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.start();
+      status.textContent = "Запись...";
 
-        // Загрузка в Google Cloud Storage
-        uploadButton.addEventListener('click', async () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-            const formData = new FormData();
-            formData.append('audio', audioBlob, `command_${Date.now()}.wav`);
-            
-            try {
-                statusDiv.textContent = "Отправка...";
-                
-                // Здесь нужно заменить на ваш Cloud Function URL (шаг 3)
-                const response = await fetch('YOUR_CLOUD_FUNCTION_URL', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const result = await response.json();
-                statusDiv.textContent = "Успешно отправлено! ID: " + result.id;
-            } catch (err) {
-                statusDiv.textContent = "Ошибка загрузки: " + err.message;
-            }
-        });
-    </script>
+      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+        const formData = new FormData();
+        formData.append("audio", audioBlob, "command.webm");
+
+        fetch("https://script.google.com/macros/s/AKfycbwSUf7iDT4R70T3HLWkwjfazYMG2KLXPCU1C9Nlya0zy1OssQ8bSYywjzrQytF-vaZxIw/exec", {
+          method: "POST",
+          body: formData
+        }).then(() => status.textContent = "Отправлено!")
+          .catch(() => status.textContent = "Ошибка отправки.");
+      };
+
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+    };
+
+    stopBtn.onclick = () => {
+      mediaRecorder.stop();
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+      status.textContent = "Обработка...";
+    };
+  </script>
 </body>
 </html>
